@@ -1,0 +1,44 @@
+name: Docker Hub Pull
+
+on:
+  workflow_dispatch:
+    inputs:
+      image:
+        description: 'Image name to pull (mysql or user/image)'
+        required: true
+        default: 'mysql'
+      tag:
+        description: 'Version of the image to pull'
+        required: true
+        default: 'latest'
+
+env:
+  # TODO: Change variable to your registry.
+  REGISTRY: containers.pkg.github.com
+  DOCKER: docker.io
+
+# TODO: Add secrets DOCKER_USER, DOCKER_AUTH, and CR_PAT to your repo secrets
+jobs:
+
+  transfer:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: clarkbw/setup-docker@main
+        with:
+          username: ${{ secrets.DOCKER_USER }}
+          password: ${{ secrets.DOCKER_AUTH }}
+          registry: $DOCKER
+
+      - run: docker pull ${{ github.event.inputs.image }}:${{ github.event.inputs.tag }}
+
+      - uses: clarkbw/setup-docker@main
+        with:
+          username: ${{ github.actor }}
+          password: ${{ secrets.CR_PAT }}
+          registry: $REGISTRY
+
+      - run: docker tag ${{ github.event.inputs.image }}:${{ github.event.inputs.tag }} $REGISTRY/${{ github.event.inputs.image }}:${{ github.event.inputs.tag }}
+
+      - run: docker push $REGISTRY/${{ github.event.inputs.image }}:${{ github.event.inputs.tag }}
