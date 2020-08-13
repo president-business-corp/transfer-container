@@ -3,14 +3,18 @@ name: Docker Hub Pull
 on:
   workflow_dispatch:
     inputs:
-      image:
-        description: 'Image name to pull (mysql or user/image)'
+      oldImage:
+        description: 'Image name to pull (user/image)'
         required: true
-        default: 'mysql'
+        default: 'user/mysql'
       tag:
         description: 'Version of the image to pull'
         required: true
         default: 'latest'
+      newImage:
+        description: 'Image name to save github/account/(image name)'
+        required: true
+        default: 'image'
 
 env:
   # TODO: Change variable to your registry.
@@ -31,7 +35,7 @@ jobs:
           password: ${{ secrets.DOCKER_AUTH }}
           registry: $DOCKER
 
-      - run: docker pull ${{ github.event.inputs.image }}:${{ github.event.inputs.tag }}
+      - run: docker pull ${{ github.event.inputs.oldImage }}:${{ github.event.inputs.tag }}
 
       - uses: clarkbw/setup-docker@main
         with:
@@ -39,6 +43,6 @@ jobs:
           password: ${{ secrets.CR_PAT }}
           registry: $REGISTRY
 
-      - run: docker tag ${{ github.event.inputs.image }}:${{ github.event.inputs.tag }} $REGISTRY/${{ github.event.inputs.image }}:${{ github.event.inputs.tag }}
+      - run: docker tag ${{ github.event.inputs.oldImage }}:${{ github.event.inputs.tag }} $REGISTRY/${{ github.event.inputs.newImage }}:${{ github.event.inputs.tag }}
 
-      - run: docker push $REGISTRY/${{ github.event.inputs.image }}:${{ github.event.inputs.tag }}
+      - run: docker push $REGISTRY/${{ github.event.inputs.newImage }}:${{ github.event.inputs.tag }}
