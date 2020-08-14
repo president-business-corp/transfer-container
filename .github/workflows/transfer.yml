@@ -17,11 +17,12 @@ on:
         default: 'image'
 
 env:
-  # TODO: Change variable to your registry.
   REGISTRY: containers.pkg.github.com
   DOCKER: docker.io
+  # TODO: Change user to match your Docker Hub user
+  DOCKER_USER: clarkbw
 
-# TODO: Add secrets DOCKER_USER, DOCKER_AUTH, and CR_PAT to your repo secrets
+# TODO: Add secrets DOCKER_AUTH and CR_PAT to your repo secrets
 jobs:
 
   transfer:
@@ -31,7 +32,7 @@ jobs:
     steps:
       - uses: clarkbw/setup-docker@main
         with:
-          username: ${{ secrets.DOCKER_USER }}
+          username: $DOCKER_USER
           password: ${{ secrets.DOCKER_AUTH }}
           registry: $DOCKER
 
