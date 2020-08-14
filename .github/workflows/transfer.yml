@@ -35,14 +35,14 @@ jobs:
           password: ${{ secrets.DOCKER_AUTH }}
           registry: $DOCKER
 
-      - run: docker pull ${{ github.event.inputs.oldImage }}:${{ github.event.inputs.tag }}
-
       - uses: clarkbw/setup-docker@main
         with:
           username: ${{ github.actor }}
           password: ${{ secrets.CR_PAT }}
           registry: $REGISTRY
 
-      - run: docker tag ${{ github.event.inputs.oldImage }}:${{ github.event.inputs.tag }} $REGISTRY/${{ github.event.inputs.newImage }}:${{ github.event.inputs.tag }}
+      - run: docker pull ${{ github.event.inputs.oldImage }}:${{ github.event.inputs.tag }}
+
+      - run: docker tag ${{ github.event.inputs.oldImage }}:${{ github.event.inputs.tag }} $REGISTRY/${{ github.repository_owner }}/${{ github.event.inputs.newImage }}:${{ github.event.inputs.tag }}
 
       - run: docker push $REGISTRY/${{ github.event.inputs.newImage }}:${{ github.event.inputs.tag }}
