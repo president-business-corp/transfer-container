@@ -32,15 +32,15 @@ jobs:
     steps:
       - uses: clarkbw/setup-docker@main
         with:
-          username: $DOCKER_USER
+          username: ${{ env.DOCKER_USER }}
           password: ${{ secrets.DOCKER_AUTH }}
-          registry: $DOCKER
+          registry: ${{ env.DOCKER }}
 
       - uses: clarkbw/setup-docker@main
         with:
           username: ${{ github.actor }}
           password: ${{ secrets.CR_PAT }}
-          registry: $REGISTRY
+          registry: ${{ env.REGISTRY }}
 
       - run: docker pull ${{ github.event.inputs.oldImage }}:${{ github.event.inputs.tag }}
 
