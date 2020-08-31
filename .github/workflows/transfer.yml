@@ -17,7 +17,7 @@ on:
         default: 'image'
 
 env:
-  REGISTRY: containers.pkg.github.com
+  REGISTRY: ghcr.io
   DOCKER: docker.io
   # TODO: Change user to match your Docker Hub user
   DOCKER_USER: clarkbw
