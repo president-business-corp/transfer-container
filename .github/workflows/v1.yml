@@ -38,14 +38,16 @@ jobs:
         env:
           IMAGE: ${{ steps.prep.outputs.image }}
         run: |
-          for VERSION in dev edge nightly; do
-            docker $REGISTRY/${{ github.repository }}/$IMAGE:latest $REGISTRY/${{ github.repository }}/$IMAGE:$VERSION
+          for VERSION in dev edge nightly
+          do
+            docker tag $REGISTRY/${{ github.repository }}/$IMAGE:latest $REGISTRY/${{ github.repository }}/$IMAGE:$VERSION
           done
 
       - name: Docker v1 Publish
         env:
           IMAGE: ${{ steps.prep.outputs.image }}
         run: |
-          for VERSION in latest dev edge nightly; do
+          for VERSION in latest dev edge nightly
+          do
             docker publish $REGISTRY/${{ github.repository }}/$IMAGE:$VERSION
           done
