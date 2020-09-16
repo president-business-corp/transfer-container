@@ -31,7 +31,7 @@ jobs:
       - name: Docker v1 Build
         env:
           IMAGE: ${{ steps.prep.outputs.image }}
-        run: docker build . -f Dockerfile -t $REGISTRY/${{ github.repository }}/$IMAGE:latest
+        run: docker build -f Dockerfile -t $REGISTRY/${{ github.repository }}/$IMAGE:latest .
 
 
       - name: Docker v1 Tag
