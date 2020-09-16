@@ -5,7 +5,7 @@ on:
     branches: [ main ]
 
 env:
-  IMAGE: testing-$(date -u +'%Y-%m-%d')
+  IMAGE_NAME: testing
   REGISTRY: docker.pkg.github.com
 
 jobs:
@@ -15,6 +15,13 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Prepare
+        id: today
+        run: |
+          DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+          echo ::set-output name=build_date::${DATE}
+          echo ::set-output name=image::${IMAGE_NAME}-${DATE}
+
       - name: Docker v1 Login
         run: echo $TOKEN | docker login -u $USER --password-stdin $REGISTRY
         env:
@@ -22,16 +29,22 @@ jobs:
           USER: ${{ github.actor }}
 
       - name: Docker v1 Build
+        env:
+          IMAGE: ${{ steps.prep.outputs.image }}
         run: docker build . -f Dockerfile -t $REGISTRY/${{ github.repository }}/$IMAGE:latest
 
 
       - name: Docker v1 Tag
+        env:
+          IMAGE: ${{ steps.prep.outputs.image }}
         run: |
           for VERSION in dev edge nightly; do
             docker $REGISTRY/${{ github.repository }}/$IMAGE:latest $REGISTRY/${{ github.repository }}/$IMAGE:$VERSION
           done
 
       - name: Docker v1 Publish
+        env:
+          IMAGE: ${{ steps.prep.outputs.image }}
         run: |
           for VERSION in latest dev edge nightly; do
             docker publish $REGISTRY/${{ github.repository }}/$IMAGE:$VERSION
