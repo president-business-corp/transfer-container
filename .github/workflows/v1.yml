@@ -1,0 +1,37 @@
+name: Docker v1
+
+on:
+  push:
+    branches: [ main ]
+
+env:
+  IMAGE: testing-$(date -u +'%Y-%m-%d')
+
+jobs:
+  build-publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Docker v1 Login
+        run: echo $TOKEN | docker login docker.pkg.github.com -u $USER --password-stdin
+        env:
+          TOKEN: ${{ github.token }}
+          USER: ${{ github.actor }}
+
+      - name: Docker v1 Build
+        run: docker build . -f Dockerfile -t ghcr.io/${{ github.repository }}/$IMAGE:latest
+
+
+      - name: Docker v1 Tag
+        run: |
+          for VERSION in dev edge nightly; do
+            docker ghcr.io/${{ github.repository }}/$IMAGE:latest ghcr.io/${{ github.repository }}/$IMAGE:$VERSION
+          done
+
+      - name: Docker v1 Publish
+        run: |
+          for VERSION in latest dev edge nightly; do
+            docker publish ghcr.io/${{ github.repository }}/$IMAGE:$VERSION
+          done
