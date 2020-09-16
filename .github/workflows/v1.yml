@@ -6,6 +6,7 @@ on:
 
 env:
   IMAGE: testing-$(date -u +'%Y-%m-%d')
+  REGISTRY: docker.pkg.github.com
 
 jobs:
   build-publish:
@@ -15,23 +16,23 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Docker v1 Login
-        run: echo $TOKEN | docker login docker.pkg.github.com -u $USER --password-stdin
+        run: echo $TOKEN | docker login -u $USER --password-stdin $REGISTRY
         env:
           TOKEN: ${{ github.token }}
           USER: ${{ github.actor }}
 
       - name: Docker v1 Build
-        run: docker build . -f Dockerfile -t ghcr.io/${{ github.repository }}/$IMAGE:latest
+        run: docker build . -f Dockerfile -t $REGISTRY/${{ github.repository }}/$IMAGE:latest
 
 
       - name: Docker v1 Tag
         run: |
           for VERSION in dev edge nightly; do
-            docker ghcr.io/${{ github.repository }}/$IMAGE:latest ghcr.io/${{ github.repository }}/$IMAGE:$VERSION
+            docker $REGISTRY/${{ github.repository }}/$IMAGE:latest $REGISTRY/${{ github.repository }}/$IMAGE:$VERSION
           done
 
       - name: Docker v1 Publish
         run: |
           for VERSION in latest dev edge nightly; do
-            docker publish ghcr.io/${{ github.repository }}/$IMAGE:$VERSION
+            docker publish $REGISTRY/${{ github.repository }}/$IMAGE:$VERSION
           done
