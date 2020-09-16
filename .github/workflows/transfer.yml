@@ -1,28 +1,32 @@
-name: Docker Hub Pull
+name: Transfer Container Registry
 
 on:
   workflow_dispatch:
     inputs:
       oldImage:
-        description: 'Image name to pull (user/image)'
+        description: 'Image name to pull docker.pkg.github.com/user/repo/(image)'
         required: true
-        default: 'user/mysql'
-      tag:
-        description: 'Version of the image to pull'
-        required: true
-        default: 'latest'
+        default: '${{ github.repository }}/image'
       newImage:
-        description: 'Image name to save github/account/(image name)'
+        description: 'Image name to save ghcr.io/account/(image name)'
         required: true
-        default: 'image'
+        default: '${{ github.repository }}'
+      oldRegistry:
+        description: 'Old registry service. Defaults to docker.pkg.github.com'
+        default: 'docker.pkg.github.com'
+      newRegistry:
+        description: 'New registry service. Defaults to ghcr.io'
+        default: 'ghcr.io'
 
+# TODO: Add secrets NEW_REGISTRY_AUTH to your repo secrets
 env:
-  REGISTRY: ghcr.io
-  DOCKER: docker.io
-  # TODO: Change user to match your Docker Hub user
-  DOCKER_USER: clarkbw
+  NEW_REGISTRY: ${{ inputs.newRegistry }}
+  NEW_REGISTRY_USER: ${{ github.actor }}
+  NEW_REGISTRY_AUTH: ${{ secrets.NEW_REGISTRY_AUTH }}
+  OLD_REGISTRY: ${{ inputs.oldRegistry }}
+  OLD_REGISTRY_USER: ${{ github.actor }}
+  OLD_REGISTRY_AUTH: ${{ github.token }}
 
-# TODO: Add secrets DOCKER_AUTH and CR_PAT to your repo secrets
 jobs:
 
   transfer:
@@ -30,20 +34,44 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: clarkbw/setup-docker@main
+      - uses: actions/github-script
         with:
-          username: ${{ env.DOCKER_USER }}
-          password: ${{ secrets.DOCKER_AUTH }}
-          registry: ${{ env.DOCKER }}
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            const { graphql } = require("@octokit/graphql");
+            const graphqlWithAuth = graphql.defaults({
+              headers: {
+                authorization: `token ${{ github.token }}`,
+              },
+            });
 
-      - uses: clarkbw/setup-docker@main
+      - uses: docker/login-action@v1
         with:
-          username: ${{ github.actor }}
-          password: ${{ secrets.CR_PAT }}
-          registry: ${{ env.REGISTRY }}
+          username: ${{ env.OLD_REGISTRY_USER }}
+          password: ${{ env.OLD_REGISTRY_AUTH }}
+          registry: ${{ env.OLD_REGISTRY }}
 
-      - run: docker pull ${{ github.event.inputs.oldImage }}:${{ github.event.inputs.tag }}
+      - uses: docker/login-action@v1
+        with:
+          username: ${{ env.NEW_REGISTRY_USER }}
+          password: ${{ env.NEW_REGISTRY_AUTH }}
+          registry: ${{ env.NEW_REGISTRY }}
 
-      - run: docker tag ${{ github.event.inputs.oldImage }}:${{ github.event.inputs.tag }} ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ github.event.inputs.newImage }}:${{ github.event.inputs.tag }}
+      - run: |
+          for TAG in latest
+          do
+            docker pull $OLD_REGISTRY/${{ github.event.inputs.oldImage }}:${TAG}
+          done
 
-      - run: docker push ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ github.event.inputs.newImage }}:${{ github.event.inputs.tag }}
+      - run: |
+          for TAG in latest
+          do
+            docker tag ${OLD_REGISTRY}/${{ github.repository }}/${{ github.event.inputs.oldImage }}:${TAG} \
+                       ${NEW_REGISTRY}/${{ github.repository_owner }}/${{ github.event.inputs.newImage }}:${TAG}
+          done
+
+      - run: |
+          for TAG in latest
+          do
+            docker push ${NEW_REGISTRY}/${{ github.repository_owner }}/${{ github.event.inputs.newImage }}:${TAG}
+          done
