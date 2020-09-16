@@ -43,11 +43,11 @@ jobs:
             docker tag $REGISTRY/${{ github.repository }}/$IMAGE:latest $REGISTRY/${{ github.repository }}/$IMAGE:$VERSION
           done
 
-      - name: Docker v1 Publish
+      - name: Docker v1 Push
         env:
           IMAGE: ${{ steps.prep.outputs.image }}
         run: |
           for VERSION in latest dev edge nightly
           do
-            docker publish $REGISTRY/${{ github.repository }}/$IMAGE:$VERSION
+            docker push $REGISTRY/${{ github.repository }}/$IMAGE:$VERSION
           done
