@@ -20,9 +20,9 @@ on:
 
 # TODO: Add secrets NEW_REGISTRY_AUTH to your repo secrets
 env:
-  NEW_REGISTRY: ${{ inputs.newRegistry }}
   NEW_REGISTRY_USER: ${{ github.actor }}
   NEW_REGISTRY_AUTH: ${{ secrets.CR_PAT }}
+  NEW_REGISTRY: ${{ inputs.newRegistry }}
   OLD_REGISTRY: ${{ inputs.oldRegistry }}
   OLD_REGISTRY_USER: ${{ github.actor }}
   OLD_REGISTRY_AUTH: ${{ github.token }}
