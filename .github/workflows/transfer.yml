@@ -2,28 +2,13 @@ name: Transfer Container Registry
 
 on:
   workflow_dispatch:
-    inputs:
-      oldImage:
-        description: 'Image name to pull docker.pkg.github.com/user/repo/(image)'
-        required: true
-        default: 'image'
-      newImage:
-        description: 'Image name to save ghcr.io/account/(image name)'
-        required: true
-        default: 'new-image'
-      oldRegistry:
-        description: 'Old registry service. Defaults to docker.pkg.github.com'
-        default: 'docker.pkg.github.com'
-      newRegistry:
-        description: 'New registry service. Defaults to ghcr.io'
-        default: 'ghcr.io'
 
 # TODO: Add secrets NEW_REGISTRY_AUTH to your repo secrets
 env:
   NEW_REGISTRY_USER: ${{ github.actor }}
   NEW_REGISTRY_AUTH: ${{ secrets.CR_PAT }}
-  NEW_REGISTRY: ${INPUT_NEWREGISTRY}
-  OLD_REGISTRY: ${INPUT_OLDREGISTRY}
+  NEW_REGISTRY: ghcr.io
+  OLD_REGISTRY: docker.pkg.github.com
   OLD_REGISTRY_USER: ${{ github.actor }}
   OLD_REGISTRY_AUTH: ${{ github.token }}
 
@@ -61,10 +46,19 @@ jobs:
             if (!result) {
               core.setFailed('GraphQL request failed')
             } else {
-              return result
+              return result.repository.packages.nodes;
             }
+
       - name: Echo all Packages
-        run: echo "${{fromJSON(steps.v1s.outputs.result).repository.packages.*.name}}"
+        run: echo "${{steps.v1s.outputs.result}}"
+
+      - uses: actions/github-script@v3
+        id: all
+        with:
+          script: |
+            const packages = JSON.parse(${{steps.v1s.outputs.result}});
+            return packages.map(container => container.versions.nodes.filter(v => v.version != 'docker-base-layer').map(v => `${container.name}:${v.version}`));
+
       - uses: docker/login-action@v1
         with:
           username: ${{ env.OLD_REGISTRY_USER }}
@@ -78,20 +72,20 @@ jobs:
           registry: ${{ env.NEW_REGISTRY }}
 
       - run: |
-          for TAG in latest
+          for IMAGE in ${{fromJSON(steps.all.outputs.result)}}
           do
-            docker pull $OLD_REGISTRY/${{ github.event.inputs.oldImage }}:${TAG}
+            docker pull ${OLD_REGISTRY}/${{ github.repository }}/$IMAGE
           done
 
       - run: |
-          for TAG in latest
+          for IMAGE in ${{fromJSON(steps.all.outputs.result)}}
           do
-            docker tag ${OLD_REGISTRY}/${{ github.repository }}/${{ github.event.inputs.oldImage }}:${TAG} \
-                       ${NEW_REGISTRY}/${{ github.repository_owner }}/${{ github.event.inputs.newImage }}:${TAG}
+            docker tag ${OLD_REGISTRY}/${{ github.repository }}/$IMAGE \
+                       ${NEW_REGISTRY}/${{ github.repository }}/$IMAGE
           done
 
       - run: |
-          for TAG in latest
+          for IMAGE in ${{fromJSON(steps.all.outputs.result)}}
           do
-            docker push ${NEW_REGISTRY}/${{ github.repository_owner }}/${{ github.event.inputs.newImage }}:${TAG}
+            docker push ${NEW_REGISTRY}/${{ github.repository }}/$IMAGE
           done
