@@ -1,4 +1,4 @@
-name: Docker v1
+name: Testing Docker v1
 
 on:
   push:
@@ -18,7 +18,7 @@ jobs:
       - name: Prepare
         id: prep
         run: |
-          DATE=$(date -u +'%Y-%m-%dt%H-%M-%Sz')
+          DATE=$(date -u +'%Y-%m-%dt%H')
           echo ::set-output name=build_date::${DATE}
           echo ::set-output name=image::${IMAGE_NAME}-${DATE}
 
