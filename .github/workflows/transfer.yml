@@ -1,4 +1,4 @@
-name: GitHub Packages Docker ➡️ GHCR
+name: GitHub Packages Docker ➡️  GHCR
 
 on:
   workflow_dispatch:
