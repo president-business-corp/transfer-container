@@ -1,4 +1,4 @@
-name: Transfer Container Registry
+name: GitHub Packages Docker ➡️ GHCR
 
 on:
   workflow_dispatch:
