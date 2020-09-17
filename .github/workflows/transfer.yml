@@ -6,11 +6,11 @@ on:
       oldImage:
         description: 'Image name to pull docker.pkg.github.com/user/repo/(image)'
         required: true
-        default: '${{ github.repository }}/image'
+        default: 'image'
       newImage:
         description: 'Image name to save ghcr.io/account/(image name)'
         required: true
-        default: '${{ github.repository }}'
+        default: 'new-image'
       oldRegistry:
         description: 'Old registry service. Defaults to docker.pkg.github.com'
         default: 'docker.pkg.github.com'
@@ -22,7 +22,7 @@ on:
 env:
   NEW_REGISTRY: ${{ inputs.newRegistry }}
   NEW_REGISTRY_USER: ${{ github.actor }}
-  NEW_REGISTRY_AUTH: ${{ secrets.NEW_REGISTRY_AUTH }}
+  NEW_REGISTRY_AUTH: ${{ secrets.CR_PAT }}
   OLD_REGISTRY: ${{ inputs.oldRegistry }}
   OLD_REGISTRY_USER: ${{ github.actor }}
   OLD_REGISTRY_AUTH: ${{ github.token }}
