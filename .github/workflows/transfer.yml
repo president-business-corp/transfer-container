@@ -34,7 +34,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/github-script
+      - uses: actions/github-script@v3
         id: v1s
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
