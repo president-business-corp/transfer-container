@@ -38,33 +38,33 @@ jobs:
         id: v1s
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
-          query: |
-            query($owner:String!, $name:String!) {
+          script: |
+            const query = `query($owner:String!, $name:String!) {
               repository(owner:$owner, name:$name){
                 packages(first: 100, packageType:DOCKER) {
-                  edges {
-                    node {
-                      id
-                      name
-                      packageType
+                  nodes {
+                    name
+                    versions(first: 100) {
+                      nodes {
+                        version
+                      }
                     }
-                  }      
+                  }
                 }
               }
-            }
-          script: |
+            }`;
             const variables = {
               owner: context.repo.owner,
               name: context.repo.repo
             }
-            const result = await github.graphql(core.getInput('query'), variables)
+            const result = await github.graphql(query, variables)
             if (!result) {
               core.setFailed('GraphQL request failed')
             } else {
               return result
             }
       - name: Echo all Packages
-        run: echo "${{steps.v1s.outputs.result.repository.packages.*.name}}"
+        run: echo "${{fromJSON(steps.v1s.outputs.result.repository.packages.*.name)}}"
       - uses: docker/login-action@v1
         with:
           username: ${{ env.OLD_REGISTRY_USER }}
