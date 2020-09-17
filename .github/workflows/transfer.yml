@@ -3,7 +3,7 @@ name: Transfer Container Registry
 on:
   workflow_dispatch:
 
-# TODO: Add secrets NEW_REGISTRY_AUTH to your repo secrets
+# TODO: Add the a read:packages, write:packages scoped PAT for GHCR to the repo secrets as CR_PAT
 env:
   NEW_REGISTRY_USER: ${{ github.actor }}
   NEW_REGISTRY_AUTH: ${{ secrets.CR_PAT }}
