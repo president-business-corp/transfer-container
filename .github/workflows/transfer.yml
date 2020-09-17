@@ -39,7 +39,6 @@ jobs:
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
-            const { graphql } = require("@octokit/graphql");
             const graphqlWithAuth = graphql.defaults({
               headers: {
                 authorization: `token ${{ github.token }}`,
