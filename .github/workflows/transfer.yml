@@ -56,7 +56,7 @@ jobs:
         id: all
         with:
           script: |
-            const packages = JSON.parse("${{steps.v1s.outputs.result}}");
+            const packages = JSON.parse('${{steps.v1s.outputs.result}}');
             console.log(packages);
             const nodes = packages.repository.packages.nodes;
             const result = nodes.map(container => container.versions.nodes.filter(v => v.version != 'docker-base-layer').map(v => `${container.name}:${v.version}`)).flat();
