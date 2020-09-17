@@ -46,7 +46,7 @@ jobs:
             if (!result) {
               core.setFailed('GraphQL request failed')
             } else {
-              return result.repository.packages.nodes;
+              return result;
             }
 
       - name: Echo all Packages
@@ -56,7 +56,7 @@ jobs:
         id: all
         with:
           script: |
-            const packages = JSON.parse(${{steps.v1s.outputs.result}});
+            const packages = JSON.parse(${{steps.v1s.outputs.result}}).repository.packages.nodes;
             return packages.map(container => container.versions.nodes.filter(v => v.version != 'docker-base-layer').map(v => `${container.name}:${v.version}`));
 
       - uses: docker/login-action@v1
