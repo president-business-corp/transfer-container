@@ -22,8 +22,8 @@ on:
 env:
   NEW_REGISTRY_USER: ${{ github.actor }}
   NEW_REGISTRY_AUTH: ${{ secrets.CR_PAT }}
-  NEW_REGISTRY: ${{ inputs.newRegistry }}
-  OLD_REGISTRY: ${{ inputs.oldRegistry }}
+  NEW_REGISTRY: ${INPUT_NEWREGISTRY}
+  OLD_REGISTRY: ${INPUT_OLDREGISTRY}
   OLD_REGISTRY_USER: ${{ github.actor }}
   OLD_REGISTRY_AUTH: ${{ github.token }}
 
